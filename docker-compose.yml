@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+    # custom image
+    php-edi-srv-app:
+        container_name: php-edi-srv-app
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                - user=mauricio
+                - uid=1000
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www/
+            - /mnt/edi_diageo:/var/www/storage/edi_diageo
+        restart: unless-stopped
+        networks:
+            - php-edi-srv
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+
+    # nginx
+    php-edi-srv-nginx:
+        container_name: php-edi-srv-nginx
+        image: nginx:alpine
+        restart: unless-stopped
+        ports:
+            - "8020:80"
+        volumes:
+            - ./docker-compose/nginx/:/etc/nginx/conf.d/
+            - ./:/var/www
+        networks:
+            - php-edi-srv
+
+    # redis
+#    php-edi-srv-redis:
+#        container_name: php-edi-srv-redis
+#        image: redis:latest
+#        restart: unless-stopped
+#        ports:
+#            - 6379:6379
+#        networks:
+#            - php-edi-srv
+
+    # mariadb
+#    php-edi-srv-mariadb:
+#        container_name: php-edi-srv-mariadb
+#        image: mariadb:latest
+#        environment:
+#            - MYSQL_ROOT_PASSWORD=root!@#
+#            - MYSQL_DATABASE=omni_db
+#            - MYSQL_USER=omni
+#            - MYSQL_PASSWORD=2023!@#
+#        volumes:
+#            - ./.docker/mysql/dbdata:/var/lib/mysql
+#        ports:
+#            - "3350:3306"
+#        restart: unless-stopped
+#        networks:
+#            - php-edi-srv
+
+    # Laravel Horizon
+#    php-edi-srv-horizon:
+#        container_name: php-edi-srv-horizon
+#        build:
+#            context: .
+#            dockerfile: Dockerfile
+#            args:
+#                - user=mauricio
+#                - uid=1000
+#        working_dir: /var/www/
+#        volumes:
+#            - ./:/var/www/
+#        restart: unless-stopped
+#        networks:
+#            - php-edi-srv
+#        extra_hosts:
+#            - "host.docker.internal:host-gateway"
+#        command: php artisan horizon
+
+networks:
+    php-edi-srv:
+        name: php-edi-srv
+
+volumes:
+    mariadb-data:
