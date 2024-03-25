@@ -75,13 +75,11 @@ class diageo extends Command
         // Escaneie a pasta /storage/edi_diageo e pegue todos os arquivos
         $files = File::allFiles(storage_path('/edi_diageo/emp_01'));
 
-        if (!file_exists(storage_path('edi_change'))) {
-            mkdir(storage_path('edi_change'), 0777, true);
-        }
+        // Criar diretório 'edi_change' se não existir
+        File::makeDirectory(storage_path('edi_change'), 0777, true, true);
 
-        if (!file_exists(storage_path('edi_changed'))) {
-            mkdir(storage_path('edi_changed'), 0777, true);
-        }
+        // Criar diretório 'edi_changed' se não existir
+        File::makeDirectory(storage_path('edi_changed'), 0777, true, true);
 
         // Se houver um arquivo que comece com "VENDAS", então copie-o para storage/edi_change
         foreach ($files as $file) {
