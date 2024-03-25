@@ -75,10 +75,18 @@ class diageo extends Command
         // Escaneie a pasta /storage/edi_diageo e pegue todos os arquivos
         $files = File::allFiles(storage_path('/edi_diageo/emp_01'));
 
+        if (!file_exists(storage_path('edi_change'))) {
+            mkdir(storage_path('edi_change'), 0777, true);
+        }
+
+        if (!file_exists(storage_path('edi_changed'))) {
+            mkdir(storage_path('edi_changed'), 0777, true);
+        }
 
         // Se houver um arquivo que comece com "VENDAS", então copie-o para storage/edi_change
         foreach ($files as $file) {
             if (strpos($file->getFilename(), 'VENDAS') === 0) {
+
                 File::copy($file->getPathname(), storage_path('edi_change/' . $file->getFilename()));
                 $this->nomeArquivoVendas = $file->getFilename();
             }
@@ -87,6 +95,7 @@ class diageo extends Command
         // Se houver um arquivo que comece com "VENDAS", então copie-o para storage/edi_change
         foreach ($files as $file) {
             if (strpos($file->getFilename(), 'CLIENTE') === 0) {
+
                 File::copy($file->getPathname(), storage_path('edi_change/' . $file->getFilename()));
                 $this->nomeArquivoClientes = $file->getFilename();
             }
