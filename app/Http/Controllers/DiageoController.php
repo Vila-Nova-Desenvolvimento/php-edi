@@ -23,12 +23,17 @@ class DiageoController extends Controller
             $clientes[$key]->cnj_formatado = substr($cliente->cnpj_cpf_do_cliente, 0, 2) . '.' . substr($cliente->cnpj_cpf_do_cliente, 2, 3) . '.' . substr($cliente->cnpj_cpf_do_cliente, 5, 3) . '/' . substr($cliente->cnpj_cpf_do_cliente, 8, 4) . '-' . substr($cliente->cnpj_cpf_do_cliente, 12, 2);
         }
 
+
         // Agrupe por estado, some a representatividade e retorne no formato do chartjs
         $grafico = $clientes->groupBy('estado')->map(function ($item, $key) {
+
             return [
                 'estado' => $key,
-                'representatividade' => $item->sum('representatividade')
+                'representatividade' => $item->sum(function ($cliente) {
+                    return floatval($cliente->representatividade);
+                })
             ];
+
         })->values();
 
         return Inertia::render('Diageo', [
