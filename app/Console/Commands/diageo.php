@@ -479,7 +479,7 @@ class diageo extends Command
 
                 }
 
-                File::append(storage_path('edi_changed/VENDASUN13032024112404.txt'), $line . "\n");
+                File::append(storage_path("edi_changed/{$this->nomeArquivoVendas}"), $line . "\n");
 
             }
 
