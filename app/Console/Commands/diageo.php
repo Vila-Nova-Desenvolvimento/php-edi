@@ -75,16 +75,10 @@ class diageo extends Command
         // Escaneie a pasta /storage/edi_diageo e pegue todos os arquivos
         $files = File::allFiles(storage_path('/edi_diageo/emp_01'));
 
-        // Criar diretório 'edi_change' se não existir
-        File::makeDirectory(storage_path('edi_change'), 0777, true, true);
-
-        // Criar diretório 'edi_changed' se não existir
-        File::makeDirectory(storage_path('edi_changed'), 0777, true, true);
 
         // Se houver um arquivo que comece com "VENDAS", então copie-o para storage/edi_change
         foreach ($files as $file) {
             if (strpos($file->getFilename(), 'VENDAS') === 0) {
-
                 File::copy($file->getPathname(), storage_path('edi_change/' . $file->getFilename()));
                 $this->nomeArquivoVendas = $file->getFilename();
             }
@@ -93,7 +87,6 @@ class diageo extends Command
         // Se houver um arquivo que comece com "VENDAS", então copie-o para storage/edi_change
         foreach ($files as $file) {
             if (strpos($file->getFilename(), 'CLIENTE') === 0) {
-
                 File::copy($file->getPathname(), storage_path('edi_change/' . $file->getFilename()));
                 $this->nomeArquivoClientes = $file->getFilename();
             }
@@ -659,8 +652,8 @@ class diageo extends Command
 
     public function copiarArquivosAjustados()
     {
-        File::copy(storage_path("edi_changed/{$this->nomeArquivoVendas}"), "mnt/edi_diageo/emp_01_imp/{$this->nomeArquivoVendas}");
-        File::copy(storage_path("edi_changed/{$this->nomeArquivoClientes}"), "mnt/edi_diageo/emp_01_imp/{$this->nomeArquivoClientes}");
+        File::copy(storage_path("edi_changed/{$this->nomeArquivoVendas}"), "/mnt/edi_diageo/{$this->nomeArquivoVendas}");
+        File::copy(storage_path("edi_changed/{$this->nomeArquivoClientes}"), "/mnt/edi_diageo/{$this->nomeArquivoClientes}");
     }
 
 }

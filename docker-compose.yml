@@ -33,52 +33,6 @@ services:
         networks:
             - php-edi-srv
 
-    # redis
-#    php-edi-srv-redis:
-#        container_name: php-edi-srv-redis
-#        image: redis:latest
-#        restart: unless-stopped
-#        ports:
-#            - 6379:6379
-#        networks:
-#            - php-edi-srv
-
-    # mariadb
-#    php-edi-srv-mariadb:
-#        container_name: php-edi-srv-mariadb
-#        image: mariadb:latest
-#        environment:
-#            - MYSQL_ROOT_PASSWORD=root!@#
-#            - MYSQL_DATABASE=omni_db
-#            - MYSQL_USER=omni
-#            - MYSQL_PASSWORD=2023!@#
-#        volumes:
-#            - ./.docker/mysql/dbdata:/var/lib/mysql
-#        ports:
-#            - "3350:3306"
-#        restart: unless-stopped
-#        networks:
-#            - php-edi-srv
-
-    # Laravel Horizon
-#    php-edi-srv-horizon:
-#        container_name: php-edi-srv-horizon
-#        build:
-#            context: .
-#            dockerfile: Dockerfile
-#            args:
-#                - user=mauricio
-#                - uid=1000
-#        working_dir: /var/www/
-#        volumes:
-#            - ./:/var/www/
-#        restart: unless-stopped
-#        networks:
-#            - php-edi-srv
-#        extra_hosts:
-#            - "host.docker.internal:host-gateway"
-#        command: php artisan horizon
-
 networks:
     php-edi-srv:
         name: php-edi-srv
