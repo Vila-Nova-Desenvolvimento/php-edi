@@ -97,3 +97,5 @@ COPY docker-compose/php/php.ini $PHP_INI_DIR/conf.d/
 EXPOSE 9003 9000
 
 USER $user
+
+CMD ["yarn", "start"]
