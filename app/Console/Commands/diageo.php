@@ -652,8 +652,8 @@ class diageo extends Command
 
     public function copiarArquivosAjustados()
     {
-        File::copy(storage_path("edi_changed/{$this->nomeArquivoVendas}"), "/mnt/edi_diageo/{$this->nomeArquivoVendas}");
-        File::copy(storage_path("edi_changed/{$this->nomeArquivoClientes}"), "/mnt/edi_diageo/{$this->nomeArquivoClientes}");
+        File::copy(storage_path("edi_changed/{$this->nomeArquivoVendas}"), "/mnt/edi_diageo/emp_01_imp/{$this->nomeArquivoVendas}");
+        File::copy(storage_path("edi_changed/{$this->nomeArquivoClientes}"), "/mnt/edi_diageo/emp_01_imp/{$this->nomeArquivoClientes}");
     }
 
 }
