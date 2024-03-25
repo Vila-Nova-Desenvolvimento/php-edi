@@ -41,31 +41,62 @@ class diageo extends Command
     public function handle()
     {
 
+        $this->info('Ajustando os dados...');
+        $this->clearTerminal(2);
+
         DB::table('vendas_ajustadas')->delete();
         DB::table('vendas')->delete();
         DB::table('clientes')->delete();
         DB::table('clientes_ajustados')->delete();
         DB::table('clientes_alvo')->delete();
 
+        $this->info('Processando arquivos EDI da Diageo...');
+        $this->clearTerminal(2);
+
+        $this->info('Copiando arquivos...');
+
         // Copia os arquivos para uma pasta intermediária
         $this->copiarArquivos();
+
+        $this->clearTerminal(0);
+        $this->info('Precessando vendas ...');
+
 
         // Le o arquivo e grava na tabela vendas
         $this->importarVendas();
 
+        $this->clearTerminal(0);
+        $this->info('Processando clientes!');
+
         // Le o arquivo e graba na tabela clientes
         $this->importarClientes();
+
+
+        $this->clearTerminal(0);
+        $this->info('Buscando clientes no ERP Consinco...');
 
         // Copia os clientes da Consico para uma tabela inermediária
         $this->copiarClientesConsinco();
 
+        $this->clearTerminal(0);
+        $this->info('Pulverizando vendas...');
+
         // Pulveriza a venda entre novos clientes
         $this->pulverizarVendas();
+
+        $this->clearTerminal(0);
+        $this->info('Calculando representatividade...');
 
         // Calcula os clientes
         $this->calcularClientes();
 
+        $this->clearTerminal(0);
+        $this->info('Diponibilizando os arquivos...');
+
         $this->copiarArquivosAjustados();
+
+        $this->clearTerminal(0);
+        $this->info('ok, tá na mão!');
 
     }
 
@@ -491,7 +522,6 @@ class diageo extends Command
 
     }
 
-
     public static function criarLinhaProdutos($campos)
     {
         $estrutura_campos = [
@@ -539,7 +569,6 @@ class diageo extends Command
 
         return $linha;
     }
-
 
     public function criar_linha_cliente($campos) {
 
@@ -656,6 +685,13 @@ class diageo extends Command
 
         File::copy(storage_path("edi_changed/{$this->nomeArquivoVendas}"), storage_path("/edi_diageo/emp_01_imp/{$this->nomeArquivoVendas}"));
         File::copy(storage_path("edi_changed/{$this->nomeArquivoClientes}"), storage_path("/edi_diageo/emp_01_imp/{$this->nomeArquivoClientes}"));
+    }
+
+
+    protected function clearTerminal($delay = 2)
+    {
+        sleep($delay);
+        $this->output->write("\033[2J\033[;H");
     }
 
 }
