@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
     # custom image
-    php-edi-srv-app:
+    app:
         container_name: php-edi-srv-app
         build:
             context: .
@@ -14,6 +14,7 @@ services:
         volumes:
             - ./:/var/www/
             - /mnt/edi_diageo:/var/www/storage/edi_diageo
+            - /mnt/edi_pernold:/var/www/storage/edi_pernold
         restart: unless-stopped
         networks:
             - php-edi-srv
@@ -21,12 +22,12 @@ services:
             - "host.docker.internal:host-gateway"
 
     # nginx
-    php-edi-srv-nginx:
+    nginx:
         container_name: php-edi-srv-nginx
         image: nginx:alpine
         restart: unless-stopped
         ports:
-            - "8075:80"
+            - "8025:80"
         volumes:
             - ./docker-compose/nginx/:/etc/nginx/conf.d/
             - ./:/var/www

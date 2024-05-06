@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ClientesAlvo extends Model
 {
 
-    protected $connection = 'sqlite';
+    protected $connection = 'mysql';
     protected $table = 'clientes_alvo';
 
     use HasFactory;

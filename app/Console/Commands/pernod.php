@@ -12,7 +12,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
-class diageo extends Command
+class pernod extends Command
 {
 
     /**
@@ -20,14 +20,14 @@ class diageo extends Command
      *
      * @var string
      */
-    protected $signature = 'edi:diageo';
+    protected $signature = 'edi:pernod';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Processa os arquivos EDI da Diageo.';
+    protected $description = 'Processa os arquivos EDI da pernod.';
 
     /* Se for mensal, gera datas dentro do perído, qualquer outra coisa usa a data original */
     protected $periodo = "diario";
@@ -41,6 +41,9 @@ class diageo extends Command
     public function handle()
     {
 
+        $this->copiarClientesConsinco();
+        exit;
+
         $this->info('Ajustando os dados...');
         $this->clearTerminal(2);
 
@@ -50,7 +53,7 @@ class diageo extends Command
         DB::table('clientes_ajustados')->delete();
         DB::table('clientes_alvo')->delete();
 
-        $this->info('Processando arquivos EDI da Diageo...');
+        $this->info('Processando arquivos EDI da Pernod...');
         $this->clearTerminal(2);
 
         $this->info('Copiando arquivos...');
@@ -98,13 +101,20 @@ class diageo extends Command
         $this->clearTerminal(0);
         $this->info('ok, tá na mão!');
 
+        DB::table('edi_gerados')->insert([
+            'nome_arquivo_vendas' => $this->nomeArquivoVendas,
+            'nome_arquivo_clientes' => $this->nomeArquivoClientes,
+            'modelo' => 'mtrix',
+            'industria' => 'pernod',
+        ]);
+
     }
 
     public function copiarArquivos()
     {
 
-        // Escaneie a pasta /storage/edi_diageo e pegue todos os arquivos
-        $files = File::allFiles(storage_path('/edi_diageo/emp_01'));
+        // Escaneie a pasta /storage/edi_pernoldd e pegue todos os arquivos
+        $files = File::allFiles(storage_path('/edi_pernold/emp_01'));
 
 
         // Se houver um arquivo que comece com "VENDAS", então copie-o para storage/edi_change
@@ -229,7 +239,7 @@ class diageo extends Command
 
             $linha = $this->interpretarLinhaCliente($line);
 
-            if(!empty($linha['identificacao_do_cliente'])){
+            if (!empty($linha['identificacao_do_cliente'])) {
                 Clientes::insert([
                     'arquivo_referencia' => $this->nomeArquivoClientes,
                     'identificacao_do_cliente' => trim($linha['identificacao_do_cliente']),
@@ -276,7 +286,7 @@ class diageo extends Command
             // Interpretar a linha do produto
             $linha = $this->interpretarLinhaProduto($line);
 
-            if(!empty(trim($linha['cnpj_agente_distribuicao']))){
+            if (!empty(trim($linha['cnpj_agente_distribuicao']))) {
                 Vendas::insert([
                     'arquivo_referencia' => $this->nomeArquivoVendas,
                     'tipo_do_registro' => trim($linha['tipo_do_registro']),
@@ -308,7 +318,7 @@ class diageo extends Command
     {
 
         $vendas = DB::table('vendas_ajustadas')
-            ->selectRaw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS REAL) * CAST(REPLACE(preco_de_venda, ",", ".") AS REAL)), 2) AS total')
+            ->selectRaw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS DECIMAL(10,2)) * CAST(REPLACE(preco_de_venda, ",", ".") AS DECIMAL(10,2))), 2) AS total')
             ->first();
 
         $clientesAjustados = ClientesAjustados::all();
@@ -375,7 +385,7 @@ class diageo extends Command
             if (!in_array(substr($linha['cep'], 0, 2), ['30', '31', '32', '33', '34', '35', '36', '37', '38', '39'])) {
 
                 // Obter a quantidade do produto como um número inteiro
-                $quantidade = (int) explode('.', $linha['quantidade'])[0];
+                $quantidade = (int)explode('.', $linha['quantidade'])[0];
 
                 // Inicializar a quantidade restante com a quantidade total
                 $quantidade_restante = $quantidade;
@@ -383,7 +393,7 @@ class diageo extends Command
                 // Acréscimo de 40
                 // Acréscimo de 40
                 $percentual = mt_rand(38, 42) / 100; // Gera um percentual aleatório entre 38 e 42
-                $precoDeVenda = (float) $linha['preco_de_venda']; // Converte o preço de venda para float
+                $precoDeVenda = (float)$linha['preco_de_venda']; // Converte o preço de venda para float
                 $precoDeVenda *= (1 + $percentual); // Calcula o preço de venda com o acréscimo
                 $linha['preco_de_venda'] = sprintf('%08.2f', $precoDeVenda); // Formata o preço de venda
 
@@ -410,7 +420,7 @@ class diageo extends Command
                     $linha["cep"] = $clienteAlvo->cep;
 
                     // Se a configuração do arquivo tiver para mensal, gera datas aleatórias
-                    if($this->periodo == "mensal") {
+                    if ($this->periodo == "mensal") {
 
                         // pegue o ano de $linha["data_transacao"]
                         $ano = substr($linha["data_transacao"], 0, 4);
@@ -421,7 +431,7 @@ class diageo extends Command
                     }
 
                     // Troca o número da nota
-                    $linha["numero_documento"] = (int) $linha["numero_documento"] + rand(-1000, 1000);
+                    $linha["numero_documento"] = (int)$linha["numero_documento"] + rand(-1000, 1000);
                     $linha["numero_documento"] = $linha["numero_documento"] > 1000 ? $linha["numero_documento"] : $linha["numero_documento"] + 1000;
                     $linha["numero_documento"] = "00" . $linha["numero_documento"];
 
@@ -429,7 +439,7 @@ class diageo extends Command
                     $linhaNova = $this->criarLinhaProdutos($linha);
 
                     // Volta o formato
-                    $linha['quantidade'] = (int) explode('.', $linha['quantidade'])[0];
+                    $linha['quantidade'] = (int)explode('.', $linha['quantidade'])[0];
 
                     ClientesAjustados::updateOrInsert(
                         ['identificacao_do_cliente' => $linha['identificacao_cliente']],
@@ -480,9 +490,9 @@ class diageo extends Command
                     $quantidade_restante -= $quantidade_ideal;
 
                 }
-            }else{
+            } else {
 
-                if(!empty($linha['identificacao_cliente'])){
+                if (!empty($linha['identificacao_cliente'])) {
 
                     $cnpj = trim($linha['identificacao_cliente']);
 
@@ -547,43 +557,43 @@ class diageo extends Command
     public static function criarLinhaProdutos($campos)
     {
         $estrutura_campos = [
-            ['tipo_do_registro', 1,'A'],
-            ['cnpj_agente_distribuicao', 14,'A'],
-            ['identificacao_cliente', 18,'A'],
+            ['tipo_do_registro', 1, 'A'],
+            ['cnpj_agente_distribuicao', 14, 'A'],
+            ['identificacao_cliente', 18, 'A'],
             ['data_transacao', 8, 'D'],
             ['numero_documento', 20, 'A'],
             ['codigo_do_produto', 14, 'A'],
-            ['quantidade', 20,'N'],
-            ['preco_de_venda', 8,'N'],
-            ['codigo_vendedor', 20,'A'],
-            ['campo_reservado', 10,'A'],
-            ['tipo_documento', 1,'A'],
-            ['cep', 9,'N'],
-            ['codigo_lote', 13,'A'],
-            ['validade_lote', 6,'N'],
-            ['dia_validade_lote', 2,'N'],
-            ['pedido_sugerido', 1,'A'],
-            ['preco_de_venda_us', 8,'N'],
-            ['tipo_de_unidade', 4,'N'],
+            ['quantidade', 20, 'N'],
+            ['preco_de_venda', 8, 'N'],
+            ['codigo_vendedor', 20, 'A'],
+            ['campo_reservado', 10, 'A'],
+            ['tipo_documento', 1, 'A'],
+            ['cep', 9, 'N'],
+            ['codigo_lote', 13, 'A'],
+            ['validade_lote', 6, 'N'],
+            ['dia_validade_lote', 2, 'N'],
+            ['pedido_sugerido', 1, 'A'],
+            ['preco_de_venda_us', 8, 'N'],
+            ['tipo_de_unidade', 4, 'N'],
         ];
 
         $linha = "";
 
-        foreach ($estrutura_campos as $esturura){
+        foreach ($estrutura_campos as $esturura) {
 
             $nomeDoCampo = $esturura[0];
             $tamanhoDoCampo = $esturura[1];
             $tipoDoCampo = $esturura[2];
 
-            if(strlen($campos[$nomeDoCampo]) > $tamanhoDoCampo){
+            if (strlen($campos[$nomeDoCampo]) > $tamanhoDoCampo) {
                 $campos[$nomeDoCampo] = substr($campos[$nomeDoCampo], 0, $tamanhoDoCampo);
             }
 
-            if($tipoDoCampo == 'A'){
+            if ($tipoDoCampo == 'A') {
                 $linha .= str_pad($campos[$nomeDoCampo], $tamanhoDoCampo, ' ', STR_PAD_RIGHT);
-            }elseif($tipoDoCampo == 'D'){
+            } elseif ($tipoDoCampo == 'D') {
                 $linha .= str_pad($campos[$nomeDoCampo], $tamanhoDoCampo, '0', STR_PAD_LEFT);
-            }elseif($tipoDoCampo == 'N'){
+            } elseif ($tipoDoCampo == 'N') {
                 $linha .= str_pad($campos[$nomeDoCampo], $tamanhoDoCampo, '0', STR_PAD_LEFT);
             }
 
@@ -592,12 +602,13 @@ class diageo extends Command
         return $linha;
     }
 
-    public function criar_linha_cliente($campos) {
+    public function criar_linha_cliente($campos)
+    {
 
         $estrutura_campos = array(
-            array('identificacao_do_cliente', 18,'A'),
-            array('razao_social_do_cliente', 40,'A'),
-            array('endereco_logradouro', 40,'A'),
+            array('identificacao_do_cliente', 18, 'A'),
+            array('razao_social_do_cliente', 40, 'A'),
+            array('endereco_logradouro', 40, 'A'),
             array('bairro', 30, 'A'),
             array('cep', 9, 'N'),
             array('cidade', 30, 'A'),
@@ -613,21 +624,21 @@ class diageo extends Command
 
         $linha = "D23637077000172";
 
-        foreach ($estrutura_campos as $esturura){
+        foreach ($estrutura_campos as $esturura) {
 
             $nomeDoCampo = $esturura[0];
             $tamanhoDoCampo = $esturura[1];
             $tipoDoCampo = $esturura[2];
 
-            if(strlen($campos[$nomeDoCampo]) > $tamanhoDoCampo){
+            if (strlen($campos[$nomeDoCampo]) > $tamanhoDoCampo) {
                 $campos[$nomeDoCampo] = substr($campos[$nomeDoCampo], 0, $tamanhoDoCampo);
             }
 
-            if($tipoDoCampo == 'A'){
+            if ($tipoDoCampo == 'A') {
                 $linha .= str_pad($campos[$nomeDoCampo], $tamanhoDoCampo, ' ', STR_PAD_RIGHT);
-            }elseif($tipoDoCampo == 'D'){
+            } elseif ($tipoDoCampo == 'D') {
                 $linha .= str_pad($campos[$nomeDoCampo], $tamanhoDoCampo, '0', STR_PAD_LEFT);
-            }elseif($tipoDoCampo == 'N'){
+            } elseif ($tipoDoCampo == 'N') {
                 $linha .= str_pad($campos[$nomeDoCampo], $tamanhoDoCampo, '0', STR_PAD_LEFT);
             }
 
@@ -705,8 +716,8 @@ class diageo extends Command
     {
 
 
-        File::copy(storage_path("edi_changed/{$this->nomeArquivoVendas}"), storage_path("/edi_diageo/emp_01_imp/{$this->nomeArquivoVendas}"));
-        File::copy(storage_path("edi_changed/{$this->nomeArquivoClientes}"), storage_path("/edi_diageo/emp_01_imp/{$this->nomeArquivoClientes}"));
+        File::copy(storage_path("edi_changed/{$this->nomeArquivoVendas}"), storage_path("/edi_pernold/emp_01_imp/{$this->nomeArquivoVendas}"));
+        File::copy(storage_path("edi_changed/{$this->nomeArquivoClientes}"), storage_path("/edi_pernold/emp_01_imp/{$this->nomeArquivoClientes}"));
     }
 
 

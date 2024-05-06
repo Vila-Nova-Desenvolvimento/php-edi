@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('clientes_alvo', function (Blueprint $table) {
             $table->id();
+            $table->string('codcli');
             $table->string('arquivo_referencia')->nullable();
             $table->string('nrocgccpf')->nullable();
             $table->string('nomerazao')->nullable();
