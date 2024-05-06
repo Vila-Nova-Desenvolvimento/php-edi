@@ -41,9 +41,6 @@ class pernod extends Command
     public function handle()
     {
 
-        $this->copiarClientesConsinco();
-        exit;
-
         $this->info('Ajustando os dados...');
         $this->clearTerminal(2);
 
