@@ -41,7 +41,7 @@ class pernod extends Command
     public function handle()
     {
 
-        $this->info('Ajustando os dados..va.');
+        $this->info('Ajustando os dados...');
         $this->clearTerminal(2);
 
         DB::table('vendas_ajustadas')->delete();
@@ -246,7 +246,7 @@ class pernod extends Command
                     'cep' => trim($linha['cep']),
                     'cidade' => trim($linha['cidade']),
                     'estado' => trim($linha['estado']),
-                    'nome_do_responsavel' => trim($linha['nome_do_responsavel']),
+                    'nome_do_responsavel' => preg_replace('/[^A-Za-z0-9]/', '', $linha['nome_do_responsavel']),
                     'numeros_de_telefone' => trim($linha['numeros_de_telefone']),
                     'cnpj_cpf_do_cliente' => trim($linha['cnpj_cpf_do_cliente']),
                     'rota' => trim($linha['rota']),
@@ -284,6 +284,9 @@ class pernod extends Command
             $linha = $this->interpretarLinhaProduto($line);
 
             if (!empty(trim($linha['cnpj_agente_distribuicao']))) {
+
+                //dd($linha);
+
                 Vendas::insert([
                     'arquivo_referencia' => $this->nomeArquivoVendas,
                     'tipo_do_registro' => trim($linha['tipo_do_registro']),
@@ -325,7 +328,7 @@ class pernod extends Command
 
 
             $vendaPorCliente = DB::table('vendas_ajustadas')
-                ->selectRaw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS REAL) * CAST(REPLACE(preco_de_venda, ",", ".") AS REAL)), 2) AS total')
+                ->select(DB::raw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS DECIMAL(10,2)) * CAST(REPLACE(preco_de_venda, ",", ".") AS DECIMAL(10,2))), 2) AS total'))
                 ->where('identificacao_cliente', 'LIKE', "$clienteAjustado->identificacao_do_cliente%")
                 ->first();
 
@@ -448,7 +451,7 @@ class pernod extends Command
                             'cep' => trim($linha['cep']),
                             'cidade' => trim($linha['cidade'] ?? $clienteAlvo->cidade),
                             'estado' => trim($linha['estado'] ?? $clienteAlvo->uf),
-                            'nome_do_responsavel' => trim($clienteAlvo->fantasia),
+                            'nome_do_responsavel' => preg_replace('/[^A-Za-z0-9]/', '', $clienteAlvo->fantasia),
                             'numeros_de_telefone' => trim($linha['numeros_de_telefone'] ?? $clienteAlvo->telefone),
                             'cnpj_cpf_do_cliente' => trim($linha['identificacao_cliente'] ?? $clienteAlvo->cnpj),
                             'rota' => trim($linha['rota'] ?? "90"),

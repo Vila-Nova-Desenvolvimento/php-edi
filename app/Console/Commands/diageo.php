@@ -308,7 +308,7 @@ class diageo extends Command
     {
 
         $vendas = DB::table('vendas_ajustadas')
-            ->selectRaw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS REAL) * CAST(REPLACE(preco_de_venda, ",", ".") AS REAL)), 2) AS total')
+            ->selectRaw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS DECIMAL(10,2)) * CAST(REPLACE(preco_de_venda, ",", ".") AS DECIMAL(10,2))), 2) AS total')
             ->first();
 
         $clientesAjustados = ClientesAjustados::all();
@@ -318,7 +318,7 @@ class diageo extends Command
 
 
             $vendaPorCliente = DB::table('vendas_ajustadas')
-                ->selectRaw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS REAL) * CAST(REPLACE(preco_de_venda, ",", ".") AS REAL)), 2) AS total')
+                ->select(DB::raw('ROUND(SUM(CAST(REPLACE(quantidade, ",", ".") AS DECIMAL(10,2)) * CAST(REPLACE(preco_de_venda, ",", ".") AS DECIMAL(10,2))), 2) AS total'))
                 ->where('identificacao_cliente', 'LIKE', "$clienteAjustado->identificacao_do_cliente%")
                 ->first();
 
