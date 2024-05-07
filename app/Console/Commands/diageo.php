@@ -292,7 +292,7 @@ class diageo extends Command
                     'tipo_documento' => trim($linha['tipo_documento']),
                     'cep' => trim($linha['cep']),
                     'codigo_lote' => trim($linha['codigo_lote']),
-                    'validade_lote' => trim($linha['validade_lote']),
+                    'validade_lote' => trim($linha['validade_lote']) ?? null,
                     'dia_validade_lote' => trim($linha['dia_validade_lote']),
                     'pedido_sugerido' => trim($linha['pedido_sugerido']),
                     'preco_de_venda_us' => trim($linha['preco_de_venda_us']),
