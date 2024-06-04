@@ -85,10 +85,10 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     rm -rf /var/lib/apt/lists/*
 
 # Instale as dependências usando o Yarn (ou npm, se preferir)
-RUN yarn install
+#RUN yarn install
 
 # Instale o Vite globalmente (ou localmente, dependendo de suas necessidades)
-RUN yarn global add vite
+#RUN yarn global add vite
 
 # Configurações Xdebug
 COPY docker-compose/php/php.ini $PHP_INI_DIR/conf.d/
