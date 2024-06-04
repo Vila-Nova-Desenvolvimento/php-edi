@@ -65,17 +65,11 @@ class focomix extends Command
         // Le o arquivo e grava na tabela vendas
         $this->importarVendas();
 
-
-
-
-
-
         $this->clearTerminal(0);
         $this->info('Pulverizando vendas...');
 
         // Pulveriza a venda entre novos clientes
         $this->pulverizarVendas();
-
 
         $this->clearTerminal(0);
         $this->info('Diponibilizando os arquivos...');
@@ -198,12 +192,19 @@ class focomix extends Command
 
             $quantidade = $quantidade * 2;
 
-            $linha['quantidade'] = str_pad($quantidade, 15, '0', STR_PAD_LEFT) . '.0000';
+            if($quantidade < 0){
+                $linha['quantidade'] = "-" . str_pad(str_replace('-','',$quantidade), 14, '0', STR_PAD_LEFT) . '.0000';
+            }else{
+                $linha['quantidade'] = str_pad($quantidade, 15, '0', STR_PAD_LEFT) . '.0000';
+            }
 
-            $linha = self::criarLinhaProdutos($linha);
 
-            File::append(storage_path("edi_changed/{$this->nomeArquivoVendas}"), $linha . "\n");
 
+            if(!empty($linha['cnpj'])){
+                $linha = self::criarLinhaProdutos($linha);
+                File::append(storage_path("edi_changed/{$this->nomeArquivoVendas}"), $linha . "\n");
+
+            }
 
             $bar->advance();
 
