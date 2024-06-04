@@ -200,11 +200,8 @@ class focomix extends Command
 
 
 
-            if(!empty($linha['cnpj'])){
-                $linha = self::criarLinhaProdutos($linha);
-                File::append(storage_path("edi_changed/{$this->nomeArquivoVendas}"), $linha . "\n");
-
-            }
+            $linha = self::criarLinhaProdutos($linha);
+            File::append(storage_path("edi_changed/{$this->nomeArquivoVendas}"), $linha . "\n");
 
             $bar->advance();
 
